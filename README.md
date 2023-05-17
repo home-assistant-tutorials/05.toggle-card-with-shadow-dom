@@ -11,17 +11,18 @@ Encapsulate CSS into a shadow DOM
 * @author: Elmar Hinz
 * @workspace: `conf/www/tutor`
 * @name: `toggle-card-with-shadow-dom`
-* @id/prefix: `tcwsd`
+* @id: `tcwsd`
 
 You learn:
 
 * how to encapsulate the CSS into a shadow dom
+* how to reduce BEM to EM methodology
 
 ## Goal
 
 In this tutorial you will learn how to use a shadow DOM to encapsulate
 the CSS to the card. You can drop the prefixes. The BEM methodology
-(block, element, modifier) gets shrunk to a EM methodology.
+(block, element, modifier) gets shrunk to EM methodology.
 
 ## Prerequisites
 
