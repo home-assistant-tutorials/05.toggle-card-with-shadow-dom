@@ -131,10 +131,6 @@ class ToggleCardWithShadowDom extends HTMLElement {
                 width: 1.4em;
                 height: 1.4em;
             }
-            .toggle--on .button {
-            }
-            .toggle--off .button {
-            }
             .value {
                 padding-left: 0.5em;
                 display: flex;
