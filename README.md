@@ -162,3 +162,16 @@ dashboard but repeatedly in the configuration editor.
         }
     }
 ```
+
+## Discussion
+
+The solution feels a little ugly, too much workarounds. Looking for a more clean solution we would
+need to split the workflow into three steps:
+
+1. initial setup of *HTML* and *CSS*
+2. updates triggered by `setConfig()`
+3. updates triggered by `set hass()`
+
+The first step basically belongs into the constructor, which is really called once.
+The current method `doCard()` wouldn't work in the constructor though. The method
+`querySelector()` would not work in this early state.
