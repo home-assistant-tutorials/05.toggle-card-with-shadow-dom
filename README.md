@@ -17,6 +17,7 @@ You learn:
 
 * how to encapsulate the CSS into a shadow dom
 * how to reduce BEM to EM methodology
+* how to handle repeated calls of setConfig in the configuration editor
 
 ## Goal
 
@@ -27,6 +28,10 @@ the CSS to the card. You can drop the prefixes. The BEM methodology
 ## Prerequisites
 
 * tutorial 04: Plain Vanilla JavaScript Toggle Card
+* you know how to register the `card.js` as a resource
+* you know how to create the helper entity of type `boolean` aka `toggle`
+* you know how to add and edit a card
+* you know how to reload `card.js` after editing
 
 ## Setup
 
@@ -43,8 +48,10 @@ are added.
 
 ```js
     doShadowDom() {
-        this.attachShadow({ mode: "open" });
-        this.shadowRoot.append(this.status.style, this.status.card);
+        if (!this.shadowRoot) {
+            this.attachShadow({ mode: "open" });
+        }
+        this.shadowRoot.replaceChildren(this.status.style, this.status.card);
     }
 ```
 
@@ -78,7 +85,80 @@ of the HTML classes and in the style have been removed.
         this.status.toggle = this.status.card.querySelector(".toggle")
         this.status.value = this.status.card.querySelector(".value")
     }
-    ```
+```
 
-Also the log entries of the lifecycle has been removed. They served
+```js
+    doStyle() {
+        this.status.style = document.createElement("style");
+        this.status.style.textContent = `
+            .error {
+                text-color: red;
+            }
+            .error--hidden {
+                display: none;
+            }
+            .dl {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            [ ... ]
+        `
+    }
+```
+
+Without the need to use prefixes the CSS becomes much more readable.
+Also the log entries of the lifecycle have been removed. They served
 the purposes of the previous tutorial.
+
+### Addressing the configuration editor
+
+So far the concept is to do the big setup of *HTML* and *CSS* once triggered by `setConfig()`,
+then to do small changes of the dynamic values triggered by `set hass()`. Unfortunately this
+doesn't work the same way inside the configuration editor. Here `setConfig()` is called
+repeatedly upon each edit of the form.
+
+We need to adopt our concept to this. It isn't a big issue if *HTML* and *CSS* are
+created repeatedly during the rare moment of form editing. We can hold to this. But
+we have to write `doShadowDom()` in a way, that it can deal with this repetition.
+
+```js
+    doShadowDom() {
+        if (!this.shadowRoot) {
+            this.attachShadow({ mode: "open" });
+        }
+        this.shadowRoot.replaceChildren(this.status.style, this.status.card);
+    }
+```
+
+Therefore we need to check if `this.shadowRoot` is already existing before attaching it.
+We also use `element.replaceChildren()` instead of `element.append()` to update
+the children instead of just adding them.
+
+The configuration editor does call `setConfig()` repeatedly but it doesn't call
+`hass()` thereafter. As we have fully replaced the *HTML* we need to trigger `doUpdate()`
+somehow to set the dynamic values again. We do this by checking if the *hass object* is already
+existing when `setConfig()` is called. In this case it is not called from the
+dashboard but repeatedly in the configuration editor.
+
+
+```js
+    setConfig(config) {
+        this.status.config = config;
+        this.doCheck();
+        this.doCard();
+        this.doStyle();
+        this.doShadowDom();
+        this.doListen();
+        // Although doCard(), doStyle(), doShadowDom()
+        // are designed to be called once in the
+        // dashboard this doesn't hold for the
+        // configuration editor. The editor does
+        // call setConfig() repeatedly without
+        // calling hass() thereafter.
+        // In this case HTML/CSS are redrawn
+        // and need an update to refill the values.
+        if (this.hasHass()) {
+            this.doUpdate();
+        }
+    }
+```

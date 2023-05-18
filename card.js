@@ -11,6 +11,17 @@ class ToggleCardWithShadowDom extends HTMLElement {
         this.doStyle();
         this.doShadowDom();
         this.doListen();
+        // Although doCard(), doStyle(), doShadowDom()
+        // are designed to be called once in the
+        // dashboard this doesn't hold for the
+        // configuration editor. The editor does
+        // call setConfig() repeatedly without
+        // calling hass() thereafter.
+        // In this case HTML/CSS are redrawn
+        // and need an update to refill the values.
+        if (this.hasHass()) {
+            this.doUpdate();
+        }
     }
 
     set hass(hass) {
@@ -23,6 +34,18 @@ class ToggleCardWithShadowDom extends HTMLElement {
     }
 
     // accessors
+    hasHass() {
+        return this.status.hass !== undefined
+    }
+
+    isOff() {
+        return this.getState().state == 'off';
+    }
+
+    isOn() {
+        return this.getState().state == 'on';
+    }
+
     getHeader() {
         return this.status.config.header;
     }
@@ -42,14 +65,6 @@ class ToggleCardWithShadowDom extends HTMLElement {
     getName() {
         const friendlyName = this.getAttributes().friendly_name;
         return friendlyName ? friendlyName : this.getEntityID();
-    }
-
-    isOff() {
-        return this.getState().state == 'off';
-    }
-
-    isOn() {
-        return this.getState().state == 'on';
     }
 
     // jobs
@@ -141,8 +156,10 @@ class ToggleCardWithShadowDom extends HTMLElement {
     }
 
     doShadowDom() {
-        this.attachShadow({ mode: "open" });
-        this.shadowRoot.append(this.status.style, this.status.card);
+        if (!this.shadowRoot) {
+            this.attachShadow({ mode: "open" });
+        }
+        this.shadowRoot.replaceChildren(this.status.style, this.status.card);
     }
 
     doListen() {
