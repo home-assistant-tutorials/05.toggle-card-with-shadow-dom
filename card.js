@@ -1,43 +1,36 @@
 class ToggleCardWithShadowDom extends HTMLElement {
 
-    // status
-    status = {};
+    // private properties
+    _config;
+    _hass;
+    _elements = {};
 
     // lifecycle
-    setConfig(config) {
-        this.status.config = config;
-        this.doCheck();
+    constructor() {
+        super();
         this.doCard();
         this.doStyle();
         this.doShadowDom();
+        this.doQueryElements();
         this.doListen();
-        // Although doCard(), doStyle(), doShadowDom()
-        // are designed to be called once in the
-        // dashboard this doesn't hold for the
-        // configuration editor. The editor does
-        // call setConfig() repeatedly without
-        // calling hass() thereafter.
-        // In this case HTML/CSS are redrawn
-        // and need an update to refill the values.
-        if (this.hasHass()) {
-            this.doUpdate();
-        }
+    }
+
+    setConfig(config) {
+        this._config = config;
+        this.doCheckConfig();
+        this.doUpdateConfig();
     }
 
     set hass(hass) {
-        this.status.hass = hass;
-        this.doUpdate()
+        this._hass = hass;
+        this.doUpdateHass()
     }
 
-    onToggle() {
+    onClicked() {
         this.doToggle();
     }
 
     // accessors
-    hasHass() {
-        return this.status.hass !== undefined
-    }
-
     isOff() {
         return this.getState().state == 'off';
     }
@@ -47,15 +40,15 @@ class ToggleCardWithShadowDom extends HTMLElement {
     }
 
     getHeader() {
-        return this.status.config.header;
+        return this._config.header;
     }
 
     getEntityID() {
-        return this.status.config.entity;
+        return this._config.entity;
     }
 
     getState() {
-        return this.status.hass.states[this.getEntityID()];
+        return this._hass.states[this.getEntityID()];
     }
 
     getAttributes() {
@@ -68,18 +61,15 @@ class ToggleCardWithShadowDom extends HTMLElement {
     }
 
     // jobs
-    doCheck() {
-        if (!this.status.config.entity) {
+    doCheckConfig() {
+        if (!this._config.entity) {
             throw new Error('Please define an entity!');
         }
     }
 
     doCard() {
-        this.status.card = document.createElement("ha-card");
-        if (this.getHeader()) {
-            this.status.card.setAttribute("header", this.getHeader());
-        }
-        this.status.card.innerHTML = `
+        this._elements.card = document.createElement("ha-card");
+        this._elements.card.innerHTML = `
                 <div class="card-content">
                     <p class="error error--hidden">
                     <dl class="dl">
@@ -94,16 +84,12 @@ class ToggleCardWithShadowDom extends HTMLElement {
                     </dl>
                 </div>
         `;
-        this.status.error = this.status.card.querySelector(".error")
-        this.status.dl = this.status.card.querySelector(".dl")
-        this.status.topic = this.status.card.querySelector(".dt")
-        this.status.toggle = this.status.card.querySelector(".toggle")
-        this.status.value = this.status.card.querySelector(".value")
     }
 
+
     doStyle() {
-        this.status.style = document.createElement("style");
-        this.status.style.textContent = `
+        this._elements.style = document.createElement("style");
+        this._elements.style.textContent = `
             .error {
                 text-color: red;
             }
@@ -156,39 +142,54 @@ class ToggleCardWithShadowDom extends HTMLElement {
     }
 
     doShadowDom() {
-        if (!this.shadowRoot) {
-            this.attachShadow({ mode: "open" });
-        }
-        this.shadowRoot.replaceChildren(this.status.style, this.status.card);
+        this.attachShadow({ mode: "open" });
+        this.shadowRoot.append(this._elements.style, this._elements.card);
+    }
+
+    doQueryElements() {
+        const card = this._elements.card;
+        this._elements.error = card.querySelector(".error")
+        this._elements.dl = card.querySelector(".dl")
+        this._elements.topic = card.querySelector(".dt")
+        this._elements.toggle = card.querySelector(".toggle")
+        this._elements.value = card.querySelector(".value")
     }
 
     doListen() {
-        this.status.dl.addEventListener("click", this.onToggle.bind(this), false);
+        this._elements.dl.addEventListener("click", this.onClicked.bind(this), false);
     }
 
-    doUpdate() {
-        if (!this.getState()) {
-            this.status.error.textContent = `${this.getEntityID()} is unavailable.`;
-            this.status.error.classList.remove("error--hidden");
-            this.status.dl.classList.add("dl--hidden");
+    doUpdateConfig() {
+        if (this.getHeader()) {
+            this._elements.card.setAttribute("header", this.getHeader());
         } else {
-            this.status.error.textContent = "";
-            this.status.topic.textContent = this.getName();
+            this._elements.card.removeAttribute("header");
+        }
+    }
+
+    doUpdateHass() {
+        if (!this.getState()) {
+            this._elements.error.textContent = `${this.getEntityID()} is unavailable.`;
+            this._elements.error.classList.remove("error--hidden");
+            this._elements.dl.classList.add("dl--hidden");
+        } else {
+            this._elements.error.textContent = "";
+            this._elements.topic.textContent = this.getName();
             if (this.isOff()) {
-                this.status.toggle.classList.remove("toggle--on");
-                this.status.toggle.classList.add("toggle--off");
+                this._elements.toggle.classList.remove("toggle--on");
+                this._elements.toggle.classList.add("toggle--off");
             } else if (this.isOn()) {
-                this.status.toggle.classList.remove("toggle--off");
-                this.status.toggle.classList.add("toggle--on");
+                this._elements.toggle.classList.remove("toggle--off");
+                this._elements.toggle.classList.add("toggle--on");
             }
-            this.status.value.textContent = this.getState().state;
-            this.status.error.classList.add("error--hidden");
-            this.status.dl.classList.remove("dl--hidden");
+            this._elements.value.textContent = this.getState().state;
+            this._elements.error.classList.add("error--hidden");
+            this._elements.dl.classList.remove("dl--hidden");
         }
     }
 
     doToggle() {
-        this.status.hass.callService('input_boolean', 'toggle', {
+        this._hass.callService('input_boolean', 'toggle', {
             entity_id: this.getEntityID()
         });
     }
