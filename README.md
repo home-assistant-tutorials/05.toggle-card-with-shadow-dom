@@ -119,14 +119,14 @@ After:
 
 ### Dropping BEM methodology
 
-The CSS is encapsulated now. We can drop the prefix/block and stay with
+The CSS is encapsulated now. We can drop the *block* aka *prefix* and stay with
 *elements* and *modifiers*. Exploiting recent CSS advancements we can
 drop composed class names at all.
 
 In CSS the BEM class `.tcws-error-hidden` becomes `.error.hidden`. I still
 recommend to use the combination of element and modifier `.error.hidden` over
-the naked modifier `.hidden`. Even the latter becomes less error prone as
-the shadow dom is rather small.
+the naked modifier `.hidden`. Even the latter becomes less error prone as the
+shadow dom is rather small.
 
 ```js
     .error { text-color: red; }
