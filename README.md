@@ -52,6 +52,18 @@ The code of the previous tutorial is only slightly modified. The function
 
 ### Attaching the shadow dom
 
+It's basically a single line of code making a huge difference.
+
+Before:
+
+```js
+    doAttach() {
+        this.append(this._elements.style, this._elements.card);
+    }
+```
+
+After:
+
 ```js
     doAttach() {
         this.attachShadow({ mode: "open" });
@@ -60,9 +72,8 @@ The code of the previous tutorial is only slightly modified. The function
 
 ```
 
-The attachment of the shadow dom is straight forward. The children can
-be appended from the constructor already and we can query for the elements
-as early.
+The attachment of the shadow dom is straight forward. Now you are allowed
+to do the attachment already from the constructor.
 
 ```js
     constructor() {
@@ -77,7 +88,7 @@ as early.
 
 ### Simplifying `setConfig()`
 
-Now `setConfig()` can focus upon it's own tasks.
+`setConfig()` can now focus upon it's own tasks.
 
 Before:
 
