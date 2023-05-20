@@ -10,7 +10,7 @@ class ToggleCardWithShadowDom extends HTMLElement {
         super();
         this.doCard();
         this.doStyle();
-        this.doShadowDom();
+        this.doAttach();
         this.doQueryElements();
         this.doListen();
     }
@@ -32,11 +32,11 @@ class ToggleCardWithShadowDom extends HTMLElement {
 
     // accessors
     isOff() {
-        return this.getState().state == 'off';
+        return this.getState().state === 'off';
     }
 
     isOn() {
-        return this.getState().state == 'on';
+        return this.getState().state === 'on';
     }
 
     getHeader() {
@@ -71,7 +71,7 @@ class ToggleCardWithShadowDom extends HTMLElement {
         this._elements.card = document.createElement("ha-card");
         this._elements.card.innerHTML = `
                 <div class="card-content">
-                    <p class="error error--hidden">
+                    <p class="error error hidden">
                     <dl class="dl">
                         <dt class="dt"></dt>
                         <dd class="dd">
@@ -93,16 +93,12 @@ class ToggleCardWithShadowDom extends HTMLElement {
             .error {
                 text-color: red;
             }
-            .error--hidden {
-                display: none;
-            }
+            .error.hidden { display: none; }
             .dl {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
-            .dl--hidden {
-                display: none;
-            }
+            .dl.hidden { display: none; }
             .dt {
                 display: flex;
                 align-content: center;
@@ -118,12 +114,8 @@ class ToggleCardWithShadowDom extends HTMLElement {
                 border: grey;
                 border-radius: 50%;
             }
-            .toggle--on {
-                background-color: green;
-            }
-            .toggle--off{
-                background-color: red;
-            }
+            .toggle.on { background-color: green; }
+            .toggle.off{ background-color: red; }
             .button {
                 display: block;
                 border: outset 0.2em;
@@ -141,7 +133,7 @@ class ToggleCardWithShadowDom extends HTMLElement {
         `
     }
 
-    doShadowDom() {
+    doAttach() {
         this.attachShadow({ mode: "open" });
         this.shadowRoot.append(this._elements.style, this._elements.card);
     }
@@ -170,21 +162,21 @@ class ToggleCardWithShadowDom extends HTMLElement {
     doUpdateHass() {
         if (!this.getState()) {
             this._elements.error.textContent = `${this.getEntityID()} is unavailable.`;
-            this._elements.error.classList.remove("error--hidden");
-            this._elements.dl.classList.add("dl--hidden");
+            this._elements.error.classList.remove("hidden");
+            this._elements.dl.classList.add("hidden");
         } else {
             this._elements.error.textContent = "";
             this._elements.topic.textContent = this.getName();
             if (this.isOff()) {
-                this._elements.toggle.classList.remove("toggle--on");
-                this._elements.toggle.classList.add("toggle--off");
+                this._elements.toggle.classList.remove("on");
+                this._elements.toggle.classList.add("off");
             } else if (this.isOn()) {
-                this._elements.toggle.classList.remove("toggle--off");
-                this._elements.toggle.classList.add("toggle--on");
+                this._elements.toggle.classList.remove("off");
+                this._elements.toggle.classList.add("on");
             }
             this._elements.value.textContent = this.getState().state;
-            this._elements.error.classList.add("error--hidden");
-            this._elements.dl.classList.remove("dl--hidden");
+            this._elements.error.classList.add("hidden");
+            this._elements.dl.classList.remove("hidden");
         }
     }
 
