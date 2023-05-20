@@ -15,9 +15,10 @@ Encapsulate CSS into a shadow DOM
 
 You learn:
 
-* how to encapsulate the CSS into a shadow dom
-* how to replace BEM methodology with nested CSS modifiers
-* how to handle repeated calls of setConfig in the configuration editor
+* how to attach a shadow dom inside the constructor
+* how to clean up the lifecycle
+* how to get rid of the prefixes
+* how to migrate BEM methodology with nested CSS modifiers
 
 ## Intro
 
