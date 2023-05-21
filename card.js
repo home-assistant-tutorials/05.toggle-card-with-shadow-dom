@@ -120,6 +120,7 @@ class ToggleCardWithShadowDom extends HTMLElement {
                 display: block;
                 border: outset 0.2em;
                 border-radius: 50%;
+                border-color: silver;
                 background-color: silver;
                 width: 1.4em;
                 height: 1.4em;
